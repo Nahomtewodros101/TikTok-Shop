@@ -7,6 +7,7 @@ import { verifySameOrigin } from "@/lib/requestGuards";
 import { applyRateLimit } from "@/lib/rateLimit";
 import { isAmount } from "@/lib/validation";
 import { AuditLog } from "@/models/AuditLog";
+import { sendEmail } from "@/lib/mailer";
 
 export async function POST(req: Request) {
   const origin = verifySameOrigin(req);
@@ -28,18 +29,27 @@ export async function POST(req: Request) {
   if (type === "withdrawal" && user.dailyTaskCompleted < 40) {
     return NextResponse.json({ error: "Complete 40 tasks before withdrawal" }, { status: 400 });
   }
+  const autoAccept = type === "deposit";
   await Transaction.create({
     userId: user._id,
     type,
     amount: Number(amount),
     screenshotUrl: screenshotUrl || "",
     walletAddress: process.env.ADMIN_BINANCE_WALLET || "0xAdminWallet",
-    status: type === "deposit" ? "accepted" : "pending"
+    status: autoAccept ? "accepted" : "pending"
   });
   await AuditLog.create({
     actorUserId: user._id,
     action: "USER_CREATE_TRANSACTION",
     details: `type=${type};amount=${Number(amount)}`
   });
+  if (user.email) {
+    const statusText = autoAccept ? "accepted" : "pending admin approval";
+    await sendEmail(
+      user.email,
+      `${type} request submitted`,
+      `Your ${type} request for $${Number(amount)} was submitted and is currently ${statusText}.`
+    );
+  }
   return NextResponse.json({ message: "Transaction submitted" });
 }

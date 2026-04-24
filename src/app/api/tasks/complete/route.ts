@@ -44,7 +44,14 @@ export async function POST(req: Request) {
       amount: { $gte: task.requiredDeposit }
     });
     if (!proof) {
-      return NextResponse.json({ error: "Accepted special-task deposit proof is required" }, { status: 400 });
+      return NextResponse.json(
+        {
+          error: "Accepted special-task deposit proof is required",
+          requiresSpecialDeposit: true,
+          requiredDeposit: Number(task.requiredDeposit || 0)
+        },
+        { status: 400 }
+      );
     }
   }
   user.dailyTaskCompleted += 1;

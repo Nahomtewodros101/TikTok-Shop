@@ -6,6 +6,7 @@ import { setSessionCookie, signSession } from "@/lib/auth";
 import { applyRateLimit } from "@/lib/rateLimit";
 import { isEmail, isPhone, isStrongPassword, isNonEmptyString } from "@/lib/validation";
 import { requestIp, verifySameOrigin } from "@/lib/requestGuards";
+import { sendEmail } from "@/lib/mailer";
 
 export async function POST(req: Request) {
   try {
@@ -51,6 +52,13 @@ export async function POST(req: Request) {
 
     const token = await signSession({ userId: String(user._id), role: "user", name: user.name });
     await setSessionCookie(token);
+    if (user.email) {
+      await sendEmail(
+        user.email,
+        "Account created successfully",
+        "Your account has been created and your welcome balance was added. You can now start completing tasks."
+      );
+    }
     return NextResponse.json({ ok: true });
   } catch (error) {
     console.error("Signup failed", error);

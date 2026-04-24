@@ -23,13 +23,20 @@ export async function POST(req: Request) {
     if (tx.type === "deposit") user.balance += tx.amount;
     await user.save();
   }
-  await Notification.create({ userId: tx.userId, message: `Your transaction ${tx._id} is ${status}.` });
+  await Notification.create({ userId: tx.userId, message: `Your ${tx.type} transaction ${tx._id} is ${status}.` });
   await AuditLog.create({
     actorUserId: guard.session.userId,
     action: "ADMIN_REVIEW_TRANSACTION",
     targetId: String(tx._id),
     details: `status=${status}`
   });
-  if (user?.email) await sendEmail(user.email, "Transaction status updated", `Your transaction is ${status}.`);
+  if (user?.email) {
+    const subject = `${tx.type} ${status === "accepted" ? "approved" : "declined"}`;
+    const text =
+      status === "accepted"
+        ? `Your ${tx.type} transaction for $${tx.amount} was approved successfully.`
+        : `Your ${tx.type} transaction for $${tx.amount} was declined by admin.`;
+    await sendEmail(user.email, subject, text);
+  }
   return NextResponse.json({ message: "Transaction reviewed" });
 }

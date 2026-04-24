@@ -1,9 +1,11 @@
 import mongoose from "mongoose";
 
-const MONGODB_URI = process.env.MONGODB_URI;
-
-if (!MONGODB_URI) {
-  throw new Error("Missing MONGODB_URI");
+function getMongoUri(): string {
+  const uri = process.env.MONGODB_URI;
+  if (!uri) {
+    throw new Error("Missing MONGODB_URI");
+  }
+  return uri;
 }
 
 let cached = (global as typeof globalThis & { mongoose?: { conn: typeof mongoose | null; promise: Promise<typeof mongoose> | null } }).mongoose;
@@ -16,9 +18,10 @@ if (!cached) {
 }
 
 export async function connectDB() {
+  const mongoUri = getMongoUri();
   if (cached?.conn) return cached.conn;
   if (!cached?.promise) {
-    cached!.promise = mongoose.connect(MONGODB_URI, { dbName: "tiktokshop" });
+    cached!.promise = mongoose.connect(mongoUri, { dbName: "tiktokshop" });
   }
   cached!.conn = await cached!.promise;
   return cached!.conn;

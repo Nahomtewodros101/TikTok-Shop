@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 
 export function DashboardClient({ user, tasks, completedTasks, txs, notifications }: { user: any; tasks: any[]; completedTasks: any[]; txs: any[]; notifications: any[] }) {
@@ -10,8 +10,10 @@ export function DashboardClient({ user, tasks, completedTasks, txs, notification
   const [tx, setTx] = useState({ type: "deposit", amount: 0, screenshotUrl: "" });
   const [receiptName, setReceiptName] = useState("");
   const [uploading, setUploading] = useState(false);
+  const [taskStatus, setTaskStatus] = useState("");
   const [invitationKey, setInvitationKey] = useState("");
   const [taskAnswers, setTaskAnswers] = useState<Record<string, string>>({});
+  const txSectionRef = useRef<HTMLDivElement | null>(null);
   const percentage = useMemo(() => Math.min(100, Math.round((user.dailyTaskCompleted / 40) * 100)), [user.dailyTaskCompleted]);
 
   async function sendSupport() {
@@ -44,6 +46,7 @@ export function DashboardClient({ user, tasks, completedTasks, txs, notification
     });
     const data = await res.json();
     setMessage(data.message || data.error);
+    setTaskStatus(res.ok ? "Transaction submitted. Await admin review." : data.error || "Could not submit transaction.");
     if (res.ok) router.refresh();
   }
 
@@ -61,6 +64,7 @@ export function DashboardClient({ user, tasks, completedTasks, txs, notification
       if (res.ok) setTx((p) => ({ ...p, screenshotUrl: data.url }));
       if (res.ok) setReceiptName(file.name);
       setMessage(data.url ? `Uploaded: ${data.url}` : data.error || "Upload failed");
+      setTaskStatus(res.ok ? "Deposit proof uploaded successfully." : data.error || "Proof upload failed.");
       setUploading(false);
     };
     reader.readAsDataURL(file);
@@ -79,10 +83,13 @@ export function DashboardClient({ user, tasks, completedTasks, txs, notification
     });
     const data = await res.json();
     setMessage(data.message || data.error);
-    if (!res.ok && taskType === "special") {
-      setMessage(`Special task needs accepted deposit proof (min $${requiredDeposit}). Upload proof first, then retry.`);
+    if (!res.ok && taskType === "special" && data.requiresSpecialDeposit) {
+      setTaskStatus(`Special task locked. Deposit proof of at least $${requiredDeposit} is required and must be accepted by admin.`);
       setTx((p) => ({ ...p, type: "special-proof", amount: requiredDeposit }));
+      txSectionRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+      return;
     }
+    setTaskStatus(res.ok ? "Task completed successfully." : data.error || "Task submission failed.");
     if (res.ok) {
       setTaskAnswers((p) => ({ ...p, [taskId]: "" }));
       router.refresh();
@@ -110,11 +117,33 @@ export function DashboardClient({ user, tasks, completedTasks, txs, notification
     if (res.ok) router.refresh();
   }
 
+  async function clearSeenNotifications() {
+    const res = await fetch("/api/notifications/delete", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ clearSeen: true })
+    });
+    const data = await res.json();
+    setMessage(data.message || data.error);
+    if (res.ok) router.refresh();
+  }
+
   async function deleteCompletedTask(completionId: string) {
     const res = await fetch("/api/tasks/completed/delete", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ completionId })
+    });
+    const data = await res.json();
+    setMessage(data.message || data.error);
+    if (res.ok) router.refresh();
+  }
+
+  async function clearCompletedTasks() {
+    const res = await fetch("/api/tasks/completed/delete", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ clearAll: true })
     });
     const data = await res.json();
     setMessage(data.message || data.error);
@@ -159,6 +188,7 @@ export function DashboardClient({ user, tasks, completedTasks, txs, notification
       </div>
       <div className="card dashboard-panel">
         <h3>Completed Tasks</h3>
+        <button className="btn btn-outline-soft" onClick={clearCompletedTasks}>Delete All Completed Tasks</button>
         <div className="dashboard-list">
           {completedTasks.length === 0 && <p className="dashboard-subtle">No completed tasks yet.</p>}
           {completedTasks.map((t) => (
@@ -174,7 +204,7 @@ export function DashboardClient({ user, tasks, completedTasks, txs, notification
           ))}
         </div>
       </div>
-      <div className="card dashboard-panel">
+      <div className="card dashboard-panel" ref={txSectionRef}>
         <h3>Deposit / Withdraw / Proof Upload</h3>
         <select className="select" value={tx.type} onChange={(e) => setTx((p) => ({ ...p, type: e.target.value }))}>
           <option value="deposit">Deposit</option>
@@ -185,6 +215,7 @@ export function DashboardClient({ user, tasks, completedTasks, txs, notification
         <input className="input" type="file" accept="image/*" onChange={(e) => uploadReceipt(e.target.files?.[0])} />
         {receiptName && <p className="dashboard-subtle">Selected proof file: {receiptName}</p>}
         {uploading && <p className="dashboard-subtle">Uploading receipt...</p>}
+        {taskStatus && <p className="dashboard-subtle">{taskStatus}</p>}
         <button className="btn" onClick={createTx}>Submit</button>
       </div>
       <div className="card dashboard-panel">
@@ -211,6 +242,7 @@ export function DashboardClient({ user, tasks, completedTasks, txs, notification
       </div>
       <div className="card dashboard-panel">
         <h3>Admin Notifications</h3>
+        <button className="btn btn-outline-soft" onClick={clearSeenNotifications}>Delete Seen Notifications</button>
         <div className="dashboard-list">
           {notifications.length === 0 && <p className="dashboard-subtle">No notifications yet.</p>}
           {notifications.map((n) => (

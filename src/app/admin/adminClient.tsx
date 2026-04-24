@@ -168,9 +168,19 @@ export function AdminClient({
         <div className="dashboard-list">
           {txs.map((t) => (
             <div key={t._id} className="dashboard-row">
-              <p className="dashboard-subtle">
-                {t.type} ${t.amount} by {t.userId} - {t.status}
-              </p>
+              <div>
+                <p className="dashboard-subtle">
+                  {t.type} ${t.amount} by {t.userId} - {t.status}
+                </p>
+                {t.screenshotUrl && (
+                  <div className="dashboard-proof-preview">
+                    <img src={t.screenshotUrl} alt={`Proof ${t._id}`} className="dashboard-proof-image" />
+                    <a className="btn btn-outline-soft" href={t.screenshotUrl} target="_blank" rel="noreferrer">
+                      Open Proof
+                    </a>
+                  </div>
+                )}
+              </div>
               {t.status === "pending" && (
                 <div className="dashboard-action-group">
                   <button className="btn" onClick={() => updateTx(t._id, "accepted")}>Accept</button>{" "}

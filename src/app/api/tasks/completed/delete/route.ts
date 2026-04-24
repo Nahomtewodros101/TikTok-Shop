@@ -11,12 +11,17 @@ export async function POST(req: Request) {
   const guard = await requireSession();
   if ("error" in guard) return guard.error;
 
-  const { completionId } = await req.json();
+  const { completionId, clearAll } = await req.json();
+
+  await connectDB();
+  if (clearAll === true) {
+    const result = await TaskCompletion.deleteMany({ userId: guard.session.userId });
+    return NextResponse.json({ message: `Removed ${result.deletedCount} completed task(s)` });
+  }
+
   if (!isNonEmptyString(completionId)) {
     return NextResponse.json({ error: "Invalid completion id" }, { status: 400 });
   }
-
-  await connectDB();
   const deleted = await TaskCompletion.findOneAndDelete({ _id: completionId, userId: guard.session.userId });
   if (!deleted) return NextResponse.json({ error: "Completed task not found" }, { status: 404 });
   return NextResponse.json({ message: "Completed task removed" });

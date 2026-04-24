@@ -34,6 +34,7 @@ export default async function DashboardPage() {
   });
   const txs = await Transaction.find({ userId: session.userId }).sort({ createdAt: -1 }).limit(15).lean();
   const notifications = await Notification.find({ userId: session.userId }).sort({ createdAt: -1 }).limit(20).lean();
+  await Notification.updateMany({ userId: session.userId, isRead: false }, { isRead: true });
 
   return (
     <main className="container dashboard-shell" style={{ marginTop: 24 }}>
