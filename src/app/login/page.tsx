@@ -40,16 +40,25 @@ export default function LoginPage() {
     e.preventDefault();
     setMsg("Authenticating...");
     
-    const res = await fetch("/api/auth/login", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ phone, password }),
-    });
+    try {
+      const res = await fetch("/api/auth/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ phone, password }),
+      });
 
-    const data = await res.json();
-    if (!res.ok) return setMsg(data.error || "Login failed");
-    
-    window.location.href = "/dashboard";
+      let data: any = {};
+      try {
+        data = await res.json();
+      } catch {
+        data = {};
+      }
+
+      if (!res.ok) return setMsg(data.error || "Login failed. Please try again.");
+      window.location.href = "/dashboard";
+    } catch {
+      setMsg("Network error. Please check your connection and try again.");
+    }
   }
 
   return (
