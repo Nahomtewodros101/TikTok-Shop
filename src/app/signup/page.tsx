@@ -4,7 +4,6 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 // 1. Import Firebase
-import { auth, googleProvider } from "@/lib/firebase";
 import { signInWithPopup } from "firebase/auth";
 
 export default function SignUpPage() {
@@ -26,29 +25,7 @@ export default function SignUpPage() {
   const formatLabel = (key: string) => 
     key.replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase());
 
-  // 2. Google Sign Up Handler (Same logic as Login)
-  async function onGoogleSignUp() {
-    setMsgType("info");
-    setMsg("Connecting to Google...");
-    try {
-      const result = await signInWithPopup(auth, googleProvider);
-      const idToken = await result.user.getIdToken();
 
-      const res = await fetch("/api/auth/google", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ idToken }),
-      });
-
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error || "Google Signup failed");
-
-      router.push("/dashboard");
-    } catch (error: any) {
-      setMsgType("error");
-      setMsg(error.message || "An error occurred");
-    }
-  }
 
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();

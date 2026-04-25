@@ -3,7 +3,6 @@
 import { useState } from "react";
 import Link from "next/link";
 // 1. Import Firebase utilities
-import { auth, googleProvider } from "@/lib/firebase"; 
 import { signInWithPopup } from "firebase/auth";
 
 export default function LoginPage() {
@@ -12,29 +11,7 @@ export default function LoginPage() {
   const [msg, setMsg] = useState("");
   const cyanAccent = "#00ff9d";
 
-  // 2. Handle Google Sign In
-  async function onGoogleLogin() {
-    setMsg("Connecting to Google...");
-    try {
-      const result = await signInWithPopup(auth, googleProvider);
-      const idToken = await result.user.getIdToken();
 
-      // Exchange Firebase Token for your custom JWT
-      const res = await fetch("/api/auth/google", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ idToken }),
-      });
-
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error || "Google login failed");
-
-      // Successful login - redirect to dashboard
-      window.location.href = "/dashboard";
-    } catch (error: any) {
-      setMsg(error.message || "An error occurred with Google Sign-In");
-    }
-  }
 
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
