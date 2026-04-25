@@ -7,6 +7,29 @@ import { applyRateLimit } from "@/lib/rateLimit";
 import { requestIp, verifySameOrigin } from "@/lib/requestGuards";
 import { isPhone, isStrongPassword } from "@/lib/validation";
 
+function classifyAuthError(error: unknown) {
+  if (!(error instanceof Error)) return null;
+  const message = error.message.toLowerCase();
+  if (message.includes("missing mongodb_uri")) {
+    return {
+      status: 503,
+      error: "Server configuration is incomplete. Please set MONGODB_URI in deployment environment variables."
+    };
+  }
+  if (
+    message.includes("mongoose") ||
+    message.includes("mongodb") ||
+    message.includes("econnrefused") ||
+    message.includes("timed out")
+  ) {
+    return {
+      status: 503,
+      error: "Database connection failed. Please try again shortly."
+    };
+  }
+  return null;
+}
+
 export async function POST(req: Request) {
   try {
     const { phone, password } = await req.json();
@@ -27,6 +50,10 @@ export async function POST(req: Request) {
     return NextResponse.json({ ok: true, role: user.role });
   } catch (error) {
     console.error("Login failed", error);
+    const classified = classifyAuthError(error);
+    if (classified) {
+      return NextResponse.json({ error: classified.error }, { status: classified.status });
+    }
     return NextResponse.json({ error: "Could not login right now. Please try again shortly." }, { status: 500 });
   }
 }

@@ -8,6 +8,29 @@ import { isEmail, isPhone, isStrongPassword, isNonEmptyString } from "@/lib/vali
 import { requestIp, verifySameOrigin } from "@/lib/requestGuards";
 import { sendEmail } from "@/lib/mailer";
 
+function classifyAuthError(error: unknown) {
+  if (!(error instanceof Error)) return null;
+  const message = error.message.toLowerCase();
+  if (message.includes("missing mongodb_uri")) {
+    return {
+      status: 503,
+      error: "Server configuration is incomplete. Please set MONGODB_URI in deployment environment variables."
+    };
+  }
+  if (
+    message.includes("mongoose") ||
+    message.includes("mongodb") ||
+    message.includes("econnrefused") ||
+    message.includes("timed out")
+  ) {
+    return {
+      status: 503,
+      error: "Database connection failed. Please try again shortly."
+    };
+  }
+  return null;
+}
+
 export async function POST(req: Request) {
   try {
     const origin = verifySameOrigin(req);
@@ -53,15 +76,24 @@ export async function POST(req: Request) {
     const token = await signSession({ userId: String(user._id), role: "user", name: user.name });
     await setSessionCookie(token);
     if (user.email) {
-      await sendEmail(
-        user.email,
-        "Account created successfully",
-        "Your account has been created and your welcome balance was added. You can now start completing tasks."
-      );
+      try {
+        await sendEmail(
+          user.email,
+          "Account created successfully",
+          "Your account has been created and your welcome balance was added. You can now start completing tasks."
+        );
+      } catch (mailError) {
+        // Mail delivery should not block successful account creation.
+        console.error("Signup email failed", mailError);
+      }
     }
     return NextResponse.json({ ok: true });
   } catch (error) {
     console.error("Signup failed", error);
+    const classified = classifyAuthError(error);
+    if (classified) {
+      return NextResponse.json({ error: classified.error }, { status: classified.status });
+    }
     return NextResponse.json({ error: "Could not create account. The invitation key may be invalid, expired, or already used." }, { status: 500 });
   }
 }

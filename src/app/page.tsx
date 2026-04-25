@@ -19,7 +19,7 @@ export default async function HomePage() {
   return (
     <main style={{ minHeight: "100vh", background: "linear-gradient(180deg, #1a0033 0%, #000000 100%)", color: "#FFFFFF", overflow: "hidden" }}>
       <HeroMotion>
-        <section className="hero-layout" style={{ display: "flex", width: "100%", minHeight: "100vh" }}>
+        <section className="hero-layout" style={{ display: "flex", width: "100%", minHeight: "100vh",  }}>
           
           {/* --- LEFT SIDE: THE MASSIVE IMAGE SIDE (Fixed 30%) --- */}
           <div className="hero-left" style={{ 
@@ -182,7 +182,7 @@ export default async function HomePage() {
           .hero-right {
             flex: 1 1 auto !important;
             min-height: 100vh;
-            padding: 32px 20px !important;
+          
             z-index: 3;
             background: linear-gradient(
               180deg,
