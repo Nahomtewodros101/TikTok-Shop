@@ -22,9 +22,23 @@ export function DashboardClient({ user, tasks, completedTasks, txs, notification
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ ...support, name: user.name })
     });
+    
     const data = await res.json();
     setMessage(data.message || data.error);
+  
+    if (res.ok) {
+      // 1. Reset the state to clear the inputs
+      setSupport({
+        email: "",
+        reason: "technical",
+        message: ""
+      });
+      
+      // 2. Refresh server data
+      router.refresh();
+    }
   }
+  
 
   async function generateKey() {
     const res = await fetch("/api/invitation/generate", { method: "POST" });
@@ -44,11 +58,26 @@ export function DashboardClient({ user, tasks, completedTasks, txs, notification
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(tx)
     });
+    
     const data = await res.json();
     setMessage(data.message || data.error);
     setTaskStatus(res.ok ? "Transaction submitted. Await admin review." : data.error || "Could not submit transaction.");
-    if (res.ok) router.refresh();
+  
+    if (res.ok) {
+      // FIX 1: Change 'proofUrl' to 'screenshotUrl' to match your state type
+      setTx({ type: "deposit", amount: 0, screenshotUrl: "" }); 
+      
+      setReceiptName(""); 
+  
+      // FIX 2: Cast the element to HTMLInputElement so TS knows it has a '.value'
+      const fileInput = document.querySelector('input[type="file"]') as HTMLInputElement;
+      if (fileInput) fileInput.value = "";
+  
+      router.refresh();
+    }
   }
+  
+  
 
   async function uploadReceipt(file?: File) {
     if (!file) return;
@@ -243,8 +272,13 @@ export function DashboardClient({ user, tasks, completedTasks, txs, notification
           <option value="withdrawal">Withdrawal</option>
           <option value="special-proof">Special Task Proof</option>
         </select>
-        <input className="input" type="number" placeholder="Amount" onChange={(e) => setTx((p) => ({ ...p, amount: Number(e.target.value) }))} />
-        <input className="input" type="file" accept="image/*" onChange={(e) => uploadReceipt(e.target.files?.[0])} />
+        <input 
+  className="input" 
+  type="number" 
+  placeholder="Amount" 
+  value={tx.amount || ""} 
+  onChange={(e) => setTx((p) => ({ ...p, amount: Number(e.target.value) }))} 
+/>        <input className="input" type="file" accept="image/*" onChange={(e) => uploadReceipt(e.target.files?.[0])} />
         {receiptName && <p className="dashboard-subtle">Selected proof file: {receiptName}</p>}
         {uploading && <p className="dashboard-subtle">Uploading receipt...</p>}
         {taskStatus && <p className="dashboard-subtle">{taskStatus}</p>}
@@ -269,7 +303,7 @@ export function DashboardClient({ user, tasks, completedTasks, txs, notification
           {txs.map((t) => (
             <div key={t._id} className="dashboard-row">
               <p className="dashboard-subtle">{t.type} ${t.amount} - {t.status}</p>
-              <button className="btn btn-outline-soft" onClick={() => deleteTransaction(t._id)}>Delete</button>
+              <button className="btn btn-outline-soft" onClick={() => deleteTransaction(t._id)}>❌</button>
             </div>
           ))}
         </div>
