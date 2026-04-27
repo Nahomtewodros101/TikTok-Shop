@@ -4,7 +4,8 @@ const TaskCompletionSchema = new Schema(
   {
     userId: { type: Schema.Types.ObjectId, ref: "User", required: true },
     taskId: { type: Schema.Types.ObjectId, ref: "Task", required: true },
-    answer: { type: String, required: true, trim: true }
+    answer: { type: String, required: true, trim: true },
+    deletedAt: { type: Date, default: null }
   },
   { timestamps: true }
 );

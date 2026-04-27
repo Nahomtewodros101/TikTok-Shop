@@ -7,7 +7,8 @@ const SupportMessageSchema = new Schema(
     email: { type: String, required: true },
     reason: { type: String, required: true },
     message: { type: String, required: true },
-    autoReply: { type: String, required: true }
+    autoReply: { type: String, required: true },
+    deletedByAdmin: { type: Boolean, default: false }
   },
   { timestamps: true }
 );

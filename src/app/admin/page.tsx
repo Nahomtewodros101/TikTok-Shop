@@ -14,9 +14,9 @@ export default async function AdminPage() {
   await connectDB();
 
   const users = await User.find().sort({ createdAt: -1 }).lean();
-  const txs = await Transaction.find().sort({ createdAt: -1 }).limit(50).lean();
-  const messages = await SupportMessage.find().sort({ createdAt: -1 }).limit(50).lean();
-  const tasks = await Task.find().sort({ createdAt: -1 }).lean();
+  const txs = await Transaction.find({ deletedByAdmin: { $ne: true } }).sort({ createdAt: -1 }).limit(50).lean();
+  const messages = await SupportMessage.find({ deletedByAdmin: { $ne: true } }).sort({ createdAt: -1 }).limit(50).lean();
+  const tasks = await Task.find({ deletedAt: null }).sort({ createdAt: -1 }).lean();
   const totalAmount = txs.reduce((sum, t: any) => sum + Number(t.amount || 0), 0);
 
   return (

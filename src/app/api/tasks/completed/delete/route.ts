@@ -15,14 +15,21 @@ export async function POST(req: Request) {
 
   await connectDB();
   if (clearAll === true) {
-    const result = await TaskCompletion.deleteMany({ userId: guard.session.userId });
-    return NextResponse.json({ message: `Removed ${result.deletedCount} completed task(s)` });
+    const result = await TaskCompletion.updateMany(
+      { userId: guard.session.userId, deletedAt: null },
+      { deletedAt: new Date() }
+    );
+    return NextResponse.json({ message: `Removed ${result.modifiedCount} completed task(s)` });
   }
 
   if (!isNonEmptyString(completionId)) {
     return NextResponse.json({ error: "Invalid completion id" }, { status: 400 });
   }
-  const deleted = await TaskCompletion.findOneAndDelete({ _id: completionId, userId: guard.session.userId });
+  const deleted = await TaskCompletion.findOneAndUpdate(
+    { _id: completionId, userId: guard.session.userId, deletedAt: null },
+    { deletedAt: new Date() },
+    { new: true }
+  );
   if (!deleted) return NextResponse.json({ error: "Completed task not found" }, { status: 404 });
   return NextResponse.json({ message: "Completed task removed" });
 }

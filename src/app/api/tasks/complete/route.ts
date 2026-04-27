@@ -21,7 +21,7 @@ export async function POST(req: Request) {
   const user = await User.findById(guard.session.userId);
   if (!user) return NextResponse.json({ error: "User not found" }, { status: 404 });
   const task = await Task.findById(taskId);
-  if (!task || !task.isActive) return NextResponse.json({ error: "Task not available" }, { status: 400 });
+  if (!task || !task.isActive || task.deletedAt) return NextResponse.json({ error: "Task not available" }, { status: 400 });
   const existingCompletion = await TaskCompletion.findOne({ userId: user._id, taskId: task._id });
   if (existingCompletion) {
     return NextResponse.json({ error: "Task already completed. Remove it from completed tasks to retry." }, { status: 400 });
@@ -41,18 +41,22 @@ export async function POST(req: Request) {
       userId: user._id,
       type: "special-proof",
       status: "accepted",
-      amount: { $gte: task.requiredDeposit }
-    });
+      amount: { $gte: task.requiredDeposit },
+      consumedForTaskId: null
+    }).sort({ createdAt: 1 });
     if (!proof) {
       return NextResponse.json(
         {
-          error: "Accepted special-task deposit proof is required",
+          error: `Accepted special-task deposit proof of at least $${Number(task.requiredDeposit || 0)} is required for this task.`,
           requiresSpecialDeposit: true,
-          requiredDeposit: Number(task.requiredDeposit || 0)
+          requiredDeposit: Number(task.requiredDeposit || 0),
+          taskId: String(task._id)
         },
         { status: 400 }
       );
     }
+    proof.consumedForTaskId = task._id;
+    await proof.save();
   }
   user.dailyTaskCompleted += 1;
   user.balance += task.reward;

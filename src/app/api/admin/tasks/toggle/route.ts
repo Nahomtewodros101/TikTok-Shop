@@ -11,6 +11,6 @@ export async function POST(req: Request) {
   if ("error" in guard) return guard.error;
   const { taskId, isActive } = await req.json();
   await connectDB();
-  await Task.findByIdAndUpdate(taskId, { isActive: Boolean(isActive) });
+  await Task.findOneAndUpdate({ _id: taskId, deletedAt: null }, { isActive: Boolean(isActive) });
   return NextResponse.json({ message: "Task updated" });
 }
