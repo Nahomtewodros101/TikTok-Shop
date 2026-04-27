@@ -23,6 +23,13 @@ export function AdminClient({
   const [inviteKey, setInviteKey] = useState("");
   const [notify, setNotify] = useState({ userId: "", message: "" });
   const [taskForm, setTaskForm] = useState({ title: "", imageUrl: "", question: "", type: "normal", reward: 1, requiredDeposit: 0 });
+  const [usersPage, setUsersPage] = useState(1);
+  const usersPerPage = 3;
+
+  const totalUserPages = Math.max(1, Math.ceil(users.length / usersPerPage));
+  const safeUsersPage = Math.min(usersPage, totalUserPages);
+  const usersStartIndex = (safeUsersPage - 1) * usersPerPage;
+  const paginatedUsers = users.slice(usersStartIndex, usersStartIndex + usersPerPage);
 
   async function updateTx(id: string, status: "accepted" | "declined") {
     const res = await fetch("/api/admin/transactions/review", {
@@ -168,6 +175,37 @@ export function AdminClient({
     if (res.ok) router.refresh();
   }
 
+  async function manageUsers(action: "delete-user" | "delete-all-users" | "clear-user-history" | "clear-all-users-history", userId?: string) {
+    const res = await fetch("/api/admin/users/manage", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ action, userId })
+    });
+    const data = await res.json();
+    setStatusMsg(data.message || data.error);
+    if (res.ok) router.refresh();
+  }
+
+  async function deleteUser(userId: string, userName: string) {
+    if (!window.confirm(`Delete user "${userName}" from the database? This also deletes their history.`)) return;
+    await manageUsers("delete-user", userId);
+  }
+
+  async function deleteAllUsers() {
+    if (!window.confirm("Delete ALL users (except your current admin account)? This cannot be undone.")) return;
+    await manageUsers("delete-all-users");
+  }
+
+  async function clearUserHistory(userId: string, userName: string) {
+    if (!window.confirm(`Clear all history for "${userName}"?`)) return;
+    await manageUsers("clear-user-history", userId);
+  }
+
+  async function clearAllUsersHistory() {
+    if (!window.confirm("Clear history for ALL users (except your current admin account)?")) return;
+    await manageUsers("clear-all-users-history");
+  }
+
   function pickUserForNotification(userId: string) {
     setNotify((p) => ({ ...p, userId }));
     setStatusMsg(`Selected user ID ${userId} for notification.`);
@@ -202,13 +240,22 @@ export function AdminClient({
         <input className="input" placeholder="User ID" value={notify.userId} onChange={(e) => setNotify((p) => ({ ...p, userId: e.target.value }))} />
         <input className="input" placeholder="Message" value={notify.message} onChange={(e) => setNotify((p) => ({ ...p, message: e.target.value }))} />
         <button className="btn" onClick={sendNotification}>Send</button>
-        <p className="dashboard-subtle">{statusMsg}</p>
+        
       </div>
       <div className="card dashboard-panel">
-        <h3>User Role Management</h3>
-        <p className="dashboard-subtle">Assign user accounts as admins from this list.</p>
+        <h3>User Management</h3>
+        <p className="dashboard-subtle">Assign admins, clear history, or remove users from the database.</p>
+        <div className="dashboard-action-group" style={{ marginBottom: 10 }}>
+          <button className="btn btn-outline-soft" onClick={clearAllUsersHistory}>Clear All Users History</button>
+          <button className="btn btn-outline-soft" onClick={deleteAllUsers}>Delete All Users</button>
+        </div>
+        <div className="dashboard-action-group" style={{ marginBottom: 10 }}>
+          <p className="dashboard-subtle" style={{ margin: 0 }}>
+            Showing {users.length === 0 ? 0 : usersStartIndex + 1}-{Math.min(usersStartIndex + usersPerPage, users.length)} of {users.length} users
+          </p>
+        </div>
         <div className="dashboard-list">
-          {users.map((u) => (
+          {paginatedUsers.map((u) => (
             <div key={u._id} className="dashboard-row">
               <div>
                 <p className="dashboard-row-title">{u.name}</p>
@@ -224,11 +271,33 @@ export function AdminClient({
                     Make Admin
                   </button>
                 )}
+                <button className="btn btn-outline-soft" onClick={() => clearUserHistory(u._id, u.name)}>
+                  Clear History
+                </button>
+                <button className="btn btn-outline-soft" onClick={() => deleteUser(u._id, u.name)}>
+                  Delete User
+                </button>
               </div>
             </div>
           ))}
         </div>
+        <div className="dashboard-action-group" style={{ marginTop: 10 }}>
+          <button className="btn btn-outline-soft" disabled={safeUsersPage <= 1} onClick={() => setUsersPage((p) => Math.max(1, p - 1))}>
+            Previous
+          </button>
+          <p className="dashboard-subtle" style={{ margin: 0 }}>
+            Page {safeUsersPage} / {totalUserPages}
+          </p>
+          <button
+            className="btn btn-outline-soft"
+            disabled={safeUsersPage >= totalUserPages}
+            onClick={() => setUsersPage((p) => Math.min(totalUserPages, p + 1))}
+          >
+            Next
+          </button>
+        </div>
       </div>
+
       <div className="card dashboard-panel">
         <h3>Transactions Review</h3>
         <button className="btn btn-outline-soft" onClick={clearTransactionHistory}>Delete All Transaction History</button>
