@@ -52,6 +52,11 @@ export function DashboardClient({ user, tasks, completedTasks, txs, notification
 
   async function uploadReceipt(file?: File) {
     if (!file) return;
+    if (file.size > 3 * 1024 * 1024) {
+      setTaskStatus("Please choose an image under 3MB.");
+      setMessage("Receipt image is too large. Max size is 3MB.");
+      return;
+    }
     setUploading(true);
     const reader = new FileReader();
     reader.onload = async () => {
@@ -60,7 +65,12 @@ export function DashboardClient({ user, tasks, completedTasks, txs, notification
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ dataUrl: String(reader.result || ""), fileName: file.name })
       });
-      const data = await res.json();
+      let data: any = {};
+      try {
+        data = await res.json();
+      } catch {
+        data = {};
+      }
       if (res.ok) setTx((p) => ({ ...p, screenshotUrl: data.url }));
       if (res.ok) setReceiptName(file.name);
       setMessage(data.url ? `Uploaded: ${data.url}` : data.error || "Upload failed");
@@ -141,6 +151,28 @@ export function DashboardClient({ user, tasks, completedTasks, txs, notification
 
   async function clearCompletedTasks() {
     const res = await fetch("/api/tasks/completed/delete", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ clearAll: true })
+    });
+    const data = await res.json();
+    setMessage(data.message || data.error);
+    if (res.ok) router.refresh();
+  }
+
+  async function deleteTransaction(transactionId: string) {
+    const res = await fetch("/api/transactions/delete", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ transactionId })
+    });
+    const data = await res.json();
+    setMessage(data.message || data.error);
+    if (res.ok) router.refresh();
+  }
+
+  async function clearTransactionHistory() {
+    const res = await fetch("/api/transactions/delete", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ clearAll: true })
@@ -232,10 +264,12 @@ export function DashboardClient({ user, tasks, completedTasks, txs, notification
       </div>
       <div className="card dashboard-panel">
         <h3>Transaction History</h3>
+        <button className="btn btn-outline-soft" onClick={clearTransactionHistory}>Delete All Transaction History</button>
         <div className="dashboard-list">
           {txs.map((t) => (
             <div key={t._id} className="dashboard-row">
               <p className="dashboard-subtle">{t.type} ${t.amount} - {t.status}</p>
+              <button className="btn btn-outline-soft" onClick={() => deleteTransaction(t._id)}>Delete</button>
             </div>
           ))}
         </div>

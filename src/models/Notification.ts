@@ -4,7 +4,8 @@ const NotificationSchema = new Schema(
   {
     userId: { type: Schema.Types.ObjectId, ref: "User", required: true },
     message: { type: String, required: true },
-    isRead: { type: Boolean, default: false }
+    isRead: { type: Boolean, default: false },
+    deletedAt: { type: Date, default: null }
   },
   { timestamps: true }
 );

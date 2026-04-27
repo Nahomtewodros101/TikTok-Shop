@@ -9,8 +9,15 @@ export async function POST() {
   if ("error" in guard) return guard.error;
 
   await connectDB();
-  const inviteKey = generateInviteKey("INV");
-  await User.findByIdAndUpdate(guard.session.userId, { inviteKey });
+  for (let attempt = 0; attempt < 5; attempt++) {
+    const inviteKey = generateInviteKey("INV");
+    try {
+      await User.findByIdAndUpdate(guard.session.userId, { inviteKey });
+      return NextResponse.json({ message: "Invitation key generated", inviteKey });
+    } catch (error: any) {
+      if (error?.code !== 11000 || attempt === 4) throw error;
+    }
+  }
 
-  return NextResponse.json({ message: "Invitation key generated", inviteKey });
+  return NextResponse.json({ error: "Could not generate unique invitation key" }, { status: 500 });
 }

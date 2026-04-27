@@ -8,7 +8,8 @@ const TaskSchema = new Schema(
     type: { type: String, enum: ["normal", "special"], default: "normal" },
     reward: { type: Number, required: true },
     requiredDeposit: { type: Number, default: 0 },
-    isActive: { type: Boolean, default: true }
+    isActive: { type: Boolean, default: true },
+    deletedAt: { type: Date, default: null }
   },
   { timestamps: true }
 );

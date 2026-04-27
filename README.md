@@ -17,6 +17,11 @@ Secure Next.js + TypeScript + MongoDB task-to-earn web app with JWT auth, user/a
    - Seed starter tasks
 6. Sign up first user using the admin invite key generated in setup.
 
+### Production Upload Storage
+
+- Set `BLOB_READ_WRITE_TOKEN` in Vercel environment variables to store receipt uploads in Vercel Blob.
+- If not set, local development still falls back to `public/uploads` (or inline preview fallback if write fails).
+
 ## Included Features
 
 - Black theme UI with palette `#49C2E3`, `#E34960`, `#49CCE3`

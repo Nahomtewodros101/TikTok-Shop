@@ -90,6 +90,9 @@ export async function POST(req: Request) {
     return NextResponse.json({ ok: true });
   } catch (error) {
     console.error("Signup failed", error);
+    if ((error as { code?: number })?.code === 11000) {
+      return NextResponse.json({ error: "An account with this phone already exists." }, { status: 400 });
+    }
     const classified = classifyAuthError(error);
     if (classified) {
       return NextResponse.json({ error: classified.error }, { status: classified.status });

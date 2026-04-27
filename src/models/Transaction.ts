@@ -7,7 +7,10 @@ const TransactionSchema = new Schema(
     amount: { type: Number, required: true },
     walletAddress: { type: String, required: true },
     screenshotUrl: { type: String, default: "" },
-    status: { type: String, enum: ["pending", "accepted", "declined"], default: "pending" }
+    status: { type: String, enum: ["pending", "accepted", "declined"], default: "pending" },
+    consumedForTaskId: { type: Schema.Types.ObjectId, ref: "Task", default: null },
+    deletedByUser: { type: Boolean, default: false },
+    deletedByAdmin: { type: Boolean, default: false }
   },
   { timestamps: true }
 );

@@ -15,14 +15,21 @@ export async function POST(req: Request) {
 
   await connectDB();
   if (clearSeen === true) {
-    const result = await Notification.deleteMany({ userId: guard.session.userId, isRead: true });
-    return NextResponse.json({ message: `Removed ${result.deletedCount} seen notification(s)` });
+    const result = await Notification.updateMany(
+      { userId: guard.session.userId, isRead: true, deletedAt: null },
+      { deletedAt: new Date() }
+    );
+    return NextResponse.json({ message: `Removed ${result.modifiedCount} seen notification(s)` });
   }
 
   if (!isNonEmptyString(notificationId)) {
     return NextResponse.json({ error: "Invalid notification id" }, { status: 400 });
   }
-  const deleted = await Notification.findOneAndDelete({ _id: notificationId, userId: guard.session.userId });
+  const deleted = await Notification.findOneAndUpdate(
+    { _id: notificationId, userId: guard.session.userId, deletedAt: null },
+    { deletedAt: new Date() },
+    { new: true }
+  );
   if (!deleted) return NextResponse.json({ error: "Notification not found" }, { status: 404 });
   return NextResponse.json({ message: "Notification removed" });
 }

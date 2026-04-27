@@ -15,9 +15,10 @@ export default async function DashboardPage() {
   await connectDB();
 
   const user = await User.findById(session.userId).lean();
-  const completions = await TaskCompletion.find({ userId: session.userId }).sort({ createdAt: -1 }).lean();
+  const completions = await TaskCompletion.find({ userId: session.userId, deletedAt: null }).sort({ createdAt: -1 }).lean();
+  const allCompletionTaskIds = (await TaskCompletion.find({ userId: session.userId }).select("taskId").lean()).map((c: any) => c.taskId);
   const completedTaskIds = completions.map((c: any) => c.taskId);
-  const tasks = await Task.find({ isActive: true, _id: { $nin: completedTaskIds } }).lean();
+  const tasks = await Task.find({ isActive: true, deletedAt: null, _id: { $nin: allCompletionTaskIds } }).lean();
   const completedTasksRaw = await Task.find({ _id: { $in: completedTaskIds } }).lean();
   const completedTaskMap = new Map(completedTasksRaw.map((t: any) => [String(t._id), t]));
   const completedTasks = completions.map((c: any) => {
@@ -32,9 +33,9 @@ export default async function DashboardPage() {
       completedAt: c.createdAt
     };
   });
-  const txs = await Transaction.find({ userId: session.userId }).sort({ createdAt: -1 }).limit(15).lean();
-  const notifications = await Notification.find({ userId: session.userId }).sort({ createdAt: -1 }).limit(20).lean();
-  await Notification.updateMany({ userId: session.userId, isRead: false }, { isRead: true });
+  const txs = await Transaction.find({ userId: session.userId, deletedByUser: { $ne: true } }).sort({ createdAt: -1 }).limit(15).lean();
+  const notifications = await Notification.find({ userId: session.userId, deletedAt: null }).sort({ createdAt: -1 }).limit(20).lean();
+  await Notification.updateMany({ userId: session.userId, isRead: false, deletedAt: null }, { isRead: true });
 
   return (
     <main className="container dashboard-shell" style={{ marginTop: 24 }}>

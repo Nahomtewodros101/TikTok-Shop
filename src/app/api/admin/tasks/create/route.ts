@@ -22,7 +22,8 @@ export async function POST(req: Request) {
     type,
     reward: Number(reward),
     requiredDeposit: type === "special" ? Number(requiredDeposit || 0) : 0,
-    isActive: true
+    isActive: true,
+    deletedAt: null
   });
   return NextResponse.json({ message: "Task created", task });
 }

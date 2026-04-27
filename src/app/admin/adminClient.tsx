@@ -71,6 +71,72 @@ export function AdminClient({
     if (res.ok) router.refresh();
   }
 
+  async function deleteTransaction(transactionId: string) {
+    const res = await fetch("/api/admin/transactions/delete", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ transactionId })
+    });
+    const data = await res.json();
+    setStatusMsg(data.message || data.error);
+    if (res.ok) router.refresh();
+  }
+
+  async function clearTransactionHistory() {
+    const res = await fetch("/api/admin/transactions/delete", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ clearAll: true })
+    });
+    const data = await res.json();
+    setStatusMsg(data.message || data.error);
+    if (res.ok) router.refresh();
+  }
+
+  async function deleteSupportMessage(messageId: string) {
+    const res = await fetch("/api/admin/support/delete", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ messageId })
+    });
+    const data = await res.json();
+    setStatusMsg(data.message || data.error);
+    if (res.ok) router.refresh();
+  }
+
+  async function clearSupportHistory() {
+    const res = await fetch("/api/admin/support/delete", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ clearAll: true })
+    });
+    const data = await res.json();
+    setStatusMsg(data.message || data.error);
+    if (res.ok) router.refresh();
+  }
+
+  async function deleteTask(taskId: string) {
+    const res = await fetch("/api/admin/tasks/delete", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ taskId })
+    });
+    const data = await res.json();
+    setStatusMsg(data.message || data.error);
+    if (res.ok) router.refresh();
+  }
+
+  async function clearTaskHistory() {
+    const res = await fetch("/api/admin/tasks/delete", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ clearAll: true })
+    });
+    const data = await res.json();
+    setStatusMsg(data.message || data.error);
+    if (res.ok) router.refresh();
+  }
+
   async function generateInvitationKey() {
     const res = await fetch("/api/admin/invitation/generate", { method: "POST" });
     const data = await res.json();
@@ -165,6 +231,7 @@ export function AdminClient({
       </div>
       <div className="card dashboard-panel">
         <h3>Transactions Review</h3>
+        <button className="btn btn-outline-soft" onClick={clearTransactionHistory}>Delete All Transaction History</button>
         <div className="dashboard-list">
           {txs.map((t) => (
             <div key={t._id} className="dashboard-row">
@@ -187,16 +254,19 @@ export function AdminClient({
                   <button className="btn btn-outline-soft" onClick={() => updateTx(t._id, "declined")}>Decline</button>
                 </div>
               )}
+              <button className="btn btn-outline-soft" onClick={() => deleteTransaction(t._id)}>Delete</button>
             </div>
           ))}
         </div>
       </div>
       <div className="card dashboard-panel">
         <h3>Support Inbox</h3>
+        <button className="btn btn-outline-soft" onClick={clearSupportHistory}>Delete All Support History</button>
         <div className="dashboard-list">
           {messages.map((m) => (
             <div key={m._id} className="dashboard-row">
               <p className="dashboard-subtle">{m.name} ({m.email}) - {m.reason}: {m.message}</p>
+              <button className="btn btn-outline-soft" onClick={() => deleteSupportMessage(m._id)}>Delete</button>
             </div>
           ))}
         </div>
@@ -216,6 +286,7 @@ export function AdminClient({
       </div>
       <div className="card dashboard-panel">
         <h3>Task Management</h3>
+        <button className="btn btn-outline-soft" onClick={clearTaskHistory}>Delete All Task History</button>
         <div className="dashboard-list">
           {tasks.map((t) => (
             <div key={t._id} className="dashboard-row">
@@ -223,7 +294,10 @@ export function AdminClient({
                 {t.title} ({t.type}) reward ${t.reward} {t.isActive ? "active" : "inactive"}
               </p>
               <p className="dashboard-subtle">Image: {t.imageUrl || "N/A"} | Question: {t.question || "N/A"}</p>
-              <button className="btn" onClick={() => toggleTask(t._id, t.isActive)}>{t.isActive ? "Disable" : "Enable"}</button>
+              <div className="dashboard-action-group">
+                <button className="btn" onClick={() => toggleTask(t._id, t.isActive)}>{t.isActive ? "Disable" : "Enable"}</button>
+                <button className="btn btn-outline-soft" onClick={() => deleteTask(t._id)}>Delete</button>
+              </div>
             </div>
           ))}
         </div>
