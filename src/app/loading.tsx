@@ -22,8 +22,7 @@ export default function LoadingPage() {
             animation: "spinLoader 0.9s linear infinite"
           }}
         />
-        <h2 style={{ margin: 0 }}>Preparing your dashboard...</h2>
-        <p className="dashboard-subtle" style={{ marginTop: 8 }}>Secure data is loading.</p>
+        <h2 style={{ margin: 0 }}>Preparing your data...</h2>
       </div>
       <style dangerouslySetInnerHTML={{ __html: `@keyframes spinLoader { to { transform: rotate(360deg); } }` }} />
     </main>

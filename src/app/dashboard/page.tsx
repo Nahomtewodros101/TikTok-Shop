@@ -6,7 +6,7 @@ import { Task } from "@/models/Task";
 import { Transaction } from "@/models/Transaction";
 import { Notification } from "@/models/Notification";
 import { TaskCompletion } from "@/models/TaskCompletion";
-import { DashboardClient } from "./userClient";
+import  DashboardClient  from "./userClient";
 
 export default async function DashboardPage() {
   const session = await getSession();
