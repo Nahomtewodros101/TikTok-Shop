@@ -272,18 +272,74 @@ export function AdminClient({
         </div>
       </div>
       <div className="card dashboard-panel">
-        <h3>Create Task</h3>
-        <input className="input" placeholder="Title" value={taskForm.title} onChange={(e) => setTaskForm((p) => ({ ...p, title: e.target.value }))} />
-        <input className="input" placeholder="Task Image URL (required)" value={taskForm.imageUrl} onChange={(e) => setTaskForm((p) => ({ ...p, imageUrl: e.target.value }))} />
-        <input className="input" placeholder="Task Question (required)" value={taskForm.question} onChange={(e) => setTaskForm((p) => ({ ...p, question: e.target.value }))} />
-        <select className="select" value={taskForm.type} onChange={(e) => setTaskForm((p) => ({ ...p, type: e.target.value }))}>
-          <option value="normal">Normal</option>
-          <option value="special">Special</option>
-        </select>
-        <input className="input" type="number" placeholder="Reward" value={taskForm.reward} onChange={(e) => setTaskForm((p) => ({ ...p, reward: Number(e.target.value) }))} />
-        <input className="input" type="number" placeholder="Required Deposit (special)" value={taskForm.requiredDeposit} onChange={(e) => setTaskForm((p) => ({ ...p, requiredDeposit: Number(e.target.value) }))} />
-        <button className="btn" onClick={createTask}>Create Task</button>
-      </div>
+  <h3>Create Task</h3>
+
+  <div className="form-group">
+    <p className="field-label">Task Title</p>
+    <input 
+      className="input" 
+      placeholder="Enter task title" 
+      value={taskForm.title} 
+      onChange={(e) => setTaskForm((p) => ({ ...p, title: e.target.value }))} 
+    />
+  </div>
+
+  <div className="form-group">
+    <p className="field-label">Task Image URL <span className="required">(required)</span></p>
+    <input 
+      className="input" 
+      placeholder="https://example.com/image.jpg" 
+      value={taskForm.imageUrl} 
+      onChange={(e) => setTaskForm((p) => ({ ...p, imageUrl: e.target.value }))} 
+    />
+  </div>
+
+  <div className="form-group">
+    <p className="field-label">Task Question <span className="required">(required)</span></p>
+    <input 
+      className="input" 
+      placeholder="What is the answer to this task?" 
+      value={taskForm.question} 
+      onChange={(e) => setTaskForm((p) => ({ ...p, question: e.target.value }))} 
+    />
+  </div>
+
+  <div className="form-group">
+    <p className="field-label">Task Type</p>
+    <select 
+      className="select" 
+      value={taskForm.type} 
+      onChange={(e) => setTaskForm((p) => ({ ...p, type: e.target.value }))}
+    >
+      <option value="normal">Normal</option>
+      <option value="special">Special</option>
+    </select>
+  </div>
+
+  <div className="form-group">
+    <p className="field-label">Reward Amount</p>
+    <input 
+      className="input" 
+      type="number" 
+      placeholder="Enter reward amount" 
+      value={taskForm.reward} 
+      onChange={(e) => setTaskForm((p) => ({ ...p, reward: Number(e.target.value) }))} 
+    />
+  </div>
+
+  <div className="form-group">
+    <p className="field-label">Required Deposit <span className="optional">(only for Special tasks)</span></p>
+    <input 
+      className="input" 
+      type="number" 
+      placeholder="Enter required deposit" 
+      value={taskForm.requiredDeposit} 
+      onChange={(e) => setTaskForm((p) => ({ ...p, requiredDeposit: Number(e.target.value) }))} 
+    />
+  </div>
+
+  <button className="btn" onClick={createTask}>Create Task</button>
+</div>
       <div className="card dashboard-panel">
         <h3>Task Management</h3>
         <button className="btn btn-outline-soft" onClick={clearTaskHistory}>Delete All Task History</button>
