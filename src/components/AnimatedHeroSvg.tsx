@@ -17,7 +17,7 @@ export function AnimatedHeroSvg() {
         marginTop: 8
       }}
     >
-      <Image src='/cart.png' alt="Hero animation" width={1200} height={520} style={{ width: "100%", height: "auto", maxHeight: "45vh", objectFit: "contain", borderRadius: 14 }} />
+      <Image src='/cart.svg' alt="Hero animation" width={1200} height={520} style={{ width: "100%", height: "auto", maxHeight: "45vh", objectFit: "contain", borderRadius: 14 }} />
     </motion.div>
   );
 }

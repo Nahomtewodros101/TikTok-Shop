@@ -93,10 +93,8 @@ export default async function HomePage() {
                 transition={{ duration: 0.8, delay: 0.2 }}
                 style={{ marginBottom: "48px" }}
               >
-                <div style={{ fontSize: "1.4rem", color: "rgba(255,255,255,0.9)", fontWeight: 500, marginBottom: "12px" }}>
-                  <Typewriter text="Secure actions. Controlled rewards. Verified crypto flow." />
-                </div>
-                <div style={{ fontSize: "1.1rem", color: "rgba(255,255,255,0.4)", letterSpacing: "0.02em" }}>
+              
+                <div style={{ fontSize: "1.1rem", color: "rgba(250, 252, 249, )", letterSpacing: "0.02em"  }}>
                   <Typewriter text={message} />
                 </div>
               </motion.div>
