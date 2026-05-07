@@ -1,9 +1,10 @@
 :root {
   --bg: linear-gradient(180deg, #1a0033 0%, #000000 100%);
-  --c1: rgb(50, 157, 71);
+  --c1:rgb(50, 157, 71);
   --c2: #0099ff;
   --c3: #ff6600;
   --accent-pink: #ff2d95;
+  --card-bg: #1f1f2e;
   --text: #ffffff;
   --vip-red: #ff3366;
 }
@@ -12,7 +13,8 @@
   box-sizing: border-box;
 }
 
-html, body {
+html,
+body {
   margin: 0;
   padding: 0;
   min-height: 100%;
@@ -32,33 +34,23 @@ body {
   margin-top: 70px;
 }
 
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
 .container {
   max-width: 1280px;
   padding: 20px;
   margin: 70px auto 0 auto;
 }
 
-/* ==================== CARDS & FORM ELEMENTS ==================== */
 .card {
   border: 1px solid rgba(0, 153, 255, 0.35);
   background: rgba(31, 31, 46, 0.7);
   border-radius: 14px;
-  padding: 18px;
+  padding: 16px;
   margin-bottom: 20px;
-  overflow: hidden;
-}
-.btn-outline-soft{
-  background: none;
-  border: 1px solid rgba(0, 153, 255, 0.35);
-  color: rgba(255, 255, 255, 0.62);
-  border-radius: 10px;
-  padding: 11px 16px;
-  cursor: pointer;
-  font-weight: 700;
-  transition: all 0.2s ease;
-  text-decoration: none;
-  display: inline-block;
-  margin-bottom: 10px;
 }
 
 .btn {
@@ -66,42 +58,100 @@ body {
   color: #06090f;
   border: none;
   border-radius: 10px;
-  padding: 11px 16px;
+  padding: 10px 14px;
   cursor: pointer;
   font-weight: 700;
-  width: 100%;
   margin-bottom: 10px;
-  transition: all 0.2s ease;
 }
 
-.btn:hover {
-  transform: translateY(-1px);
-  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
-}
-
-.input, .select, .textarea {
+.input,
+.select,
+.textarea {
   width: 100%;
   background: rgba(10, 12, 22, 0.92);
   border: 1px solid rgba(0, 153, 255, 0.35);
   color: #fff;
   border-radius: 10px;
-  padding: 11px;
-  margin-bottom: 12px;
-  font-size: 1rem;
+  padding: 10px;
+  margin-bottom: 10px;
 }
 
-.textarea {
-  min-height: 110px;
-  resize: vertical;
-}
-
-/* ==================== DASHBOARD GRID ==================== */
-.dashboard-grid {
+.grid {
   display: grid;
-  gap: 20px;
-  grid-template-columns: repeat(auto-fit, minmax(380px, 1fr));
-  width: 100%;
-  max-width: 100%;
+  gap: 16px;
+}
+
+.grid.two {
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+}
+
+.navbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 14px 20px;
+  border-bottom: 1px solid rgba(0, 153, 255, 0.2);
+  position: sticky;
+  top: 0;
+  background: rgba(0, 0, 0, 0.85);
+  backdrop-filter: blur(8px);
+  z-index: 20;
+}
+
+.footer {
+  margin-top: auto;
+  padding: 24px 20px;
+  border-top: 1px solid rgba(0, 153, 255, 0.2);
+  color: #b7bfd7;
+}
+
+.coin-bg::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  background-image: radial-gradient(circle at 10% 10%, rgba(255, 45, 149, 0.18) 0 18px, transparent 20px),
+    radial-gradient(circle at 90% 30%, rgba(0, 255, 157, 0.15) 0 16px, transparent 18px),
+    radial-gradient(circle at 20% 85%, rgba(0, 153, 255, 0.14) 0 22px, transparent 24px);
+}
+
+.progress {
+  background: #141827;
+  border-radius: 999px;
+  overflow: hidden;
+  height: 10px;
+}
+
+.progress > span {
+  display: block;
+  height: 10px;
+  background: linear-gradient(90deg, var(--c1), var(--c2));
+}
+
+.dashboard-shell {
+  background: radial-gradient(circle at top right, rgba(0, 255, 157, 0.08), transparent), rgba(10, 10, 20, 0.7);
+  border-radius: 24px;
+  padding: 18px;
+}
+
+.dashboard-grid {
+  gap: 18px;
+}
+
+.dashboard-user-grid {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.dashboard-user-grid > .card {
+  grid-column: span 1;
+}
+
+.dashboard-admin-grid {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.dashboard-admin-grid > .card {
+  grid-column: span 1;
 }
 
 .dashboard-panel {
@@ -110,90 +160,20 @@ body {
   -webkit-backdrop-filter: blur(20px);
   border: 1px solid rgba(255, 255, 255, 0.08);
   box-shadow: 0 20px 45px rgba(0, 0, 0, 0.25);
-  border-radius: 14px;
-  padding: 18px;
-  min-width: 0;
-  height: fit-content;
-  margin-top: 50px;
-}
-
-.dashboard-proof-preview{
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-  padding: 12px;
-  border-radius: 12px;
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  background: rgba(255, 255, 255, 0.015);
-  overflow-wrap: break-word;
-  word-break: break-word;
-}
-.dashboard-proof-image{
-  width: 100%;
-  height: auto;
-  aspect-ratio: 16 / 9;
-  object-fit: cover;
-  border-radius: 12px;
-  border: 1px solid rgba(0, 153, 255, 0.35);
-  flex-shrink: 0;
-}
-/* ==================== TASK & ROW STYLES ==================== */
-.dashboard-list {
-  display: grid;
-  gap: 14px;
+  margin-top: 20px;
   min-width: 0;
 }
 
-.dashboard-task-card {
-  display: flex;
-  flex-direction: column;
-  gap: 14px;
-  padding: 14px;
-  border-radius: 12px;
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  background: rgba(255, 255, 255, 0.015);
-  min-width: 0;
+.dashboard-subtle {
+  color: rgba(255, 255, 255, 0.62);
+  font-size: 0.93rem;
 }
 
-.dashboard-task-content {
-  width: 100%;
-  min-width: 0;
-}
-
-.dashboard-row {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-  padding: 12px;
-  border-radius: 12px;
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  background: rgba(255, 255, 255, 0.015);
-  overflow-wrap: break-word;
-  word-break: break-word;
-}
-
-.dashboard-row-title {
-  margin: 0 0 6px 0;
-  font-weight: 700;
-  font-size: 1.05rem;
-}
-
-.dashboard-task-image {
-  width: 100%;
-  height: auto;
-  aspect-ratio: 16 / 9;
-  object-fit: cover;
-  border-radius: 12px;
-  border: 1px solid rgba(0, 153, 255, 0.35);
-  flex-shrink: 0;
-}
-
-/* Stats */
 .dashboard-stat-grid {
   display: grid;
   gap: 10px;
   grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
-  margin-bottom: 12px;
+  margin-bottom: 8px;
 }
 
 .dashboard-stat-chip {
@@ -202,118 +182,161 @@ body {
   border: 1px solid rgba(0, 153, 255, 0.3);
   border-radius: 12px;
   padding: 10px 12px;
-  font-weight: 500;
 }
 
-.dashboard-subtle {
-  color: rgba(255, 255, 255, 0.62);
-  font-size: 0.93rem;
-  margin: 4px 0;
+.dashboard-list {
+  display: grid;
+  gap: 10px;
+  min-width: 0;
 }
 
-/* ==================== RESPONSIVE ==================== */
-@media (min-width: 1200px) {
-  .dashboard-grid {
-    grid-template-columns: repeat(auto-fit, minmax(420px, 1fr));
-  }
+.dashboard-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 10px 12px;
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(255, 255, 255, 0.015);
+  overflow-wrap: anywhere;
+}
+
+.dashboard-row > div {
+  min-width: 0;
+}
+
+.dashboard-row-title {
+  margin: 0;
+  font-weight: 700;
+}
+
+.dashboard-action-group {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  justify-content: flex-end;
+  margin-left: auto;
+}
+
+.dashboard-task-card {
+  align-items: flex-start;
+  flex-direction: column;
+  gap: 14px;
+  padding: 14px;
+}
+
+.dashboard-task-image {
+  width: 140px;
+  height: 140px;
+  object-fit: cover;
+  border-radius: 12px;
+  border: 1px solid rgba(0, 153, 255, 0.35);
+  flex-shrink: 0;
+}
+
+.dashboard-proof-preview {
+  margin-top: 8px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.dashboard-proof-image {
+  width: 100px;
+  height: 100px;
+  object-fit: cover;
+  border-radius: 10px;
+  border: 1px solid rgba(0, 153, 255, 0.35);
+}
+
+.password-row {
+  display: flex;
+  gap: 8px;
+  align-items: flex-start;
+}
+
+.btn-outline-soft {
+  background: #fff;
+  border: 1px solid rgba(255, 255, 255, 0.25);
 }
 
 @media (max-width: 900px) {
-  .dashboard-grid {
-    grid-template-columns: 1fr;
-    gap: 16px;
-  }
-
-  .card, .dashboard-panel {
+  .container {
     padding: 14px;
   }
 
+  .grid {
+    gap: 12px;
+  }
+
+  .card {
+    padding: 12px;
+  }
+
+  .dashboard-shell {
+    border-radius: 16px;
+    padding: 12px;
+  }
+
+  .dashboard-row {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .dashboard-user-grid,
+  .dashboard-admin-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .dashboard-user-grid > .card,
+  .dashboard-admin-grid > .card {
+    grid-column: span 1 !important;
+  }
+
+  .dashboard-action-group {
+    width: 100%;
+    justify-content: flex-start;
+    margin-left: 0;
+  }
+
+  .dashboard-row > .btn,
+  .dashboard-action-group > .btn {
+    width: 100%;
+  }
+
   .dashboard-task-image {
-    aspect-ratio: 16 / 10;
-    height: 200px;
+    width: 100%;
+    height: 190px;
+  }
+}
+
+@media (max-width: 1200px) {
+  .dashboard-user-grid,
+  .dashboard-admin-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }
 
 @media (max-width: 640px) {
   .container {
-    padding: 12px;
+    padding: 10px;
   }
 
   .btn {
-    padding: 12px;
+    width: 100%;
+    padding: 10px 12px;
   }
 
-  .input, .select, .textarea {
-    padding: 10px;
+  .input,
+  .select,
+  .textarea {
+    padding: 9px;
   }
-}
 
-/* ==================== CONFIRMATION MODAL ==================== */
-.modal-overlay {
-  position: fixed;
-  inset: 0;
-  background: rgba(0, 0, 0, 0.88);
-  backdrop-filter: blur(10px);
-  z-index: 1000;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 20px;
-}
-
-.modal-content {
-  background: #1f1f2e;
-  border: 1px solid rgba(255, 255, 255, 0.12);
-  border-radius: 16px;
-  padding: 28px;
-  max-width: 440px;
-  width: 100%;
-  box-shadow: 0 30px 60px rgba(0, 0, 0, 0.6);
-  text-align: center;
-}
-
-.modal-content h3 {
-  margin: 0 0 16px 0;
-  font-size: 1.4rem;
-  color: #ff3366;
-}
-
-.modal-message {
-  color: rgba(255, 255, 255, 0.85);
-  line-height: 1.6;
-  margin-bottom: 28px;
-}
-
-.modal-actions {
-  display: flex;
-  gap: 12px;
-  justify-content: center;
-  flex-wrap: wrap;
-}
-
-.btn-danger {
-  background: linear-gradient(90deg, #ff3366, #e6004c);
-  color: white;
-  border: none;
-}
-
-.btn-warning {
-  background: linear-gradient(90deg, #ffaa00, #ff8800);
-  color: #111;
-  border: none;
-}
-
-.btn-danger:hover, .btn-warning:hover {
-  transform: translateY(-1px);
-  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
-}
-
-/* Extra polish for outline buttons */
-.btn-outline-soft {
-  transition: all 0.2s;
-}
-
-.btn-outline-soft:hover {
-  border-color: #ff3366;
-  color: #ff3366;
+  .dashboard-user-grid,
+  .dashboard-admin-grid {
+    grid-template-columns: 1fr;
+  }
 }
