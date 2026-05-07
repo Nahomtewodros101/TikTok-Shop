@@ -26,11 +26,15 @@ export function AdminClient({
   const [usersPage, setUsersPage] = useState(1);
   const usersPerPage = 3;
 
+  // New state for dropdown
+  const [selectedAction, setSelectedAction] = useState<string>("");
+
   const totalUserPages = Math.max(1, Math.ceil(users.length / usersPerPage));
   const safeUsersPage = Math.min(usersPage, totalUserPages);
   const usersStartIndex = (safeUsersPage - 1) * usersPerPage;
   const paginatedUsers = users.slice(usersStartIndex, usersStartIndex + usersPerPage);
 
+  // ================== All your existing functions (unchanged) ==================
   async function updateTx(id: string, status: "accepted" | "declined") {
     const res = await fetch("/api/admin/transactions/review", {
       method: "POST",
@@ -213,6 +217,7 @@ export function AdminClient({
 
   return (
     <section className="grid dashboard-grid dashboard-admin-grid">
+      {/* Original Top Cards */}
       <div className="card dashboard-panel">
         <h2>Admin Dashboard</h2>
         <div className="dashboard-stat-grid">
@@ -225,151 +230,184 @@ export function AdminClient({
           <LogoutButton />
         </div>
       </div>
+
       <div className="card dashboard-panel">
         <AdminStatsChart users={stats.users} txCount={stats.txCount} totalAmount={stats.totalAmount} />
       </div>
-      <div className="card dashboard-panel">
-        <h3>User Invitation Key Generator</h3>
-        <p className="dashboard-subtle">Generate a key, then copy/paste it to the user.</p>
-        <button className="btn" onClick={generateInvitationKey}>Generate Key</button>{" "}
-        <input className="input" value={inviteKey} readOnly placeholder="Generated invitation key will appear here" style={{ marginTop: 10 }} />
-        <button className="btn btn-outline-soft" onClick={copyInvitationKey} disabled={!inviteKey}>Copy Key</button>
-      </div>
-      <div className="card dashboard-panel">
-        <h3>Send Notification</h3>
-        <input className="input" placeholder="User ID" value={notify.userId} onChange={(e) => setNotify((p) => ({ ...p, userId: e.target.value }))} />
-        <input className="input" placeholder="Message" value={notify.message} onChange={(e) => setNotify((p) => ({ ...p, message: e.target.value }))} />
-        <button className="btn" onClick={sendNotification}>Send</button>
-        
-      </div>
-      <div className="card dashboard-panel">
-        <h3>User Management</h3>
-        <p className="dashboard-subtle">Assign admins, clear history, or remove users from the database.</p>
-        <div className="dashboard-action-group" style={{ marginBottom: 10 }}>
-          <button className="btn btn-outline-soft" onClick={clearAllUsersHistory}>Clear All Users History</button>
-          <button className="btn btn-outline-soft" onClick={deleteAllUsers}>Delete All Users</button>
-        </div>
-        <div className="dashboard-action-group" style={{ marginBottom: 10 }}>
-          <p className="dashboard-subtle" style={{ margin: 0 }}>
-            Showing {users.length === 0 ? 0 : usersStartIndex + 1}-{Math.min(usersStartIndex + usersPerPage, users.length)} of {users.length} users
-          </p>
-        </div>
-        <div className="dashboard-list">
-          {paginatedUsers.map((u) => (
-            <div key={u._id} className="dashboard-row">
-              <div>
-                <p className="dashboard-row-title">{u.name}</p>
-                <p className="dashboard-subtle">{u.phone} | role: {u.role} | joined: {new Date(u.joinedAt).toLocaleDateString()}</p>
-                <p className="dashboard-subtle">User ID: {u._id}</p>
-              </div>
-              <div className="dashboard-action-group">
-                <button className="btn btn-outline-soft" onClick={() => pickUserForNotification(u._id)}>
-                  Use ID for Notification
-                </button>
-                {u.role !== "admin" && (
-                  <button className="btn" onClick={() => assignAdmin(u._id)}>
-                    Make Admin
-                  </button>
-                )}
-                <button className="btn btn-outline-soft" onClick={() => clearUserHistory(u._id, u.name)}>
-                  Clear History
-                </button>
-                <button className="btn btn-outline-soft" onClick={() => deleteUser(u._id, u.name)}>
-                  Delete User
-                </button>
-              </div>
-            </div>
-          ))}
-        </div>
-        <div className="dashboard-action-group" style={{ marginTop: 10 }}>
-          <button className="btn btn-outline-soft" disabled={safeUsersPage <= 1} onClick={() => setUsersPage((p) => Math.max(1, p - 1))}>
-            Previous
-          </button>
-          <p className="dashboard-subtle" style={{ margin: 0 }}>
-            Page {safeUsersPage} / {totalUserPages}
-          </p>
-          <button
-            className="btn btn-outline-soft"
-            disabled={safeUsersPage >= totalUserPages}
-            onClick={() => setUsersPage((p) => Math.min(totalUserPages, p + 1))}
-          >
-            Next
-          </button>
-        </div>
+
+      {/* ==================== NEW DROPDOWN SELECTOR ==================== */}
+      <div className="card dashboard-panel col-span-full">
+        <h3 className="mb-3 action-title">Select Action</h3>
+        <select 
+          className="input text-lg px-3 rounded-lg py-3 w-full"
+          value={selectedAction}
+          onChange={(e) => setSelectedAction(e.target.value)}
+        >
+          <option value="invitation">User Invitation Key Generator</option>
+          <option value="notification">Send Notification</option>
+          <option value="users">User Management</option>
+          <option value="transactions">Transactions Review</option>
+          <option value="support">Support Inbox</option>
+          <option value="create-task">Create Task</option>
+          <option value="tasks">Task Management</option>
+        </select>
       </div>
 
-      <div className="card dashboard-panel">
-        <h3>Transactions Review</h3>
-        <button className="btn btn-outline-soft" onClick={clearTransactionHistory}>Delete All Transaction History</button>
-        <div className="dashboard-list">
-          {txs.map((t) => (
-            <div key={t._id} className="dashboard-row">
+      {/* ==================== DYNAMIC ANIMATED CONTENT ==================== */}
+      <div className="col-span-full transition-all duration-300">
+        {selectedAction && (
+          <div className="card dashboard-panel animate-in fade-in slide-in-from-bottom-4 duration-500">
+            
+            {/* 1. Invitation Key */}
+            {selectedAction === "invitation" && (
               <div>
-                <p className="dashboard-subtle">
-                  {t.type} ${t.amount} by {t.userId} - {t.status}
-                </p>
-                {t.screenshotUrl && (
-                  <div className="dashboard-proof-preview">
-                    <img src={t.screenshotUrl} alt={`Proof ${t._id}`} className="dashboard-proof-image" />
-                    <a className="btn btn-outline-soft" href={t.screenshotUrl} target="_blank" rel="noreferrer">
-                      Open Proof
-                    </a>
-                  </div>
-                )}
+                <h3>User Invitation Key Generator</h3>
+                <p className="dashboard-subtle">Generate a key, then copy/paste it to the user.</p>
+                <button className="btn" onClick={generateInvitationKey}>Generate Key</button>{" "}
+                <input className="input" value={inviteKey} readOnly placeholder="Generated invitation key will appear here" style={{ marginTop: 10 }} />
+                <button className="btn btn-outline-soft" onClick={copyInvitationKey} disabled={!inviteKey}>Copy Key</button>
               </div>
-              {t.status === "pending" && (
-                <div className="dashboard-action-group">
-                  <button className="btn" onClick={() => updateTx(t._id, "accepted")}>Accept</button>{" "}
-                  <button className="btn btn-outline-soft" onClick={() => updateTx(t._id, "declined")}>Decline</button>
+            )}
+
+            {/* 2. Send Notification */}
+            {selectedAction === "notification" && (
+              <div>
+                <h3>Send Notification</h3>
+                <input className="input" placeholder="User ID" value={notify.userId} onChange={(e) => setNotify((p) => ({ ...p, userId: e.target.value }))} />
+                <input className="input" placeholder="Message" value={notify.message} onChange={(e) => setNotify((p) => ({ ...p, message: e.target.value }))} />
+                <button className="btn" onClick={sendNotification}>Send</button>
+              </div>
+            )}
+
+            {/* 3. User Management */}
+            {selectedAction === "users" && (
+              <div>
+                <h3>User Management</h3>
+                <p className="dashboard-subtle">Assign admins, clear history, or remove users from the database.</p>
+                <div className="dashboard-action-group" style={{ marginBottom: 10 }}>
+                  <button className="btn btn-outline-soft" onClick={clearAllUsersHistory}>Clear All Users History</button>
+                  <button className="btn btn-outline-soft" onClick={deleteAllUsers}>Delete All Users</button>
                 </div>
-              )}
-              <button className="btn btn-outline-soft" onClick={() => deleteTransaction(t._id)}>Delete</button>
-            </div>
-          ))}
-        </div>
-      </div>
-      <div className="card dashboard-panel">
-        <h3>Support Inbox</h3>
-        <button className="btn btn-outline-soft" onClick={clearSupportHistory}>Delete All Support History</button>
-        <div className="dashboard-list">
-          {messages.map((m) => (
-            <div key={m._id} className="dashboard-row">
-              <p className="dashboard-subtle">{m.name} ({m.email}) - {m.reason}: {m.message}</p>
-              <button className="btn btn-outline-soft" onClick={() => deleteSupportMessage(m._id)}>Delete</button>
-            </div>
-          ))}
-        </div>
-      </div>
-      <div className="card dashboard-panel">
-        <h3>Create Task</h3>
-        <input className="input" placeholder="Title" value={taskForm.title} onChange={(e) => setTaskForm((p) => ({ ...p, title: e.target.value }))} />
-        <input className="input" placeholder="Task Image URL (required)" value={taskForm.imageUrl} onChange={(e) => setTaskForm((p) => ({ ...p, imageUrl: e.target.value }))} />
-        <input className="input" placeholder="Task Question (required)" value={taskForm.question} onChange={(e) => setTaskForm((p) => ({ ...p, question: e.target.value }))} />
-        <select className="select" value={taskForm.type} onChange={(e) => setTaskForm((p) => ({ ...p, type: e.target.value }))}>
-          <option value="normal">Normal</option>
-          <option value="special">Special</option>
-        </select>
-        <input className="input" type="number" placeholder="Reward" value={taskForm.reward} onChange={(e) => setTaskForm((p) => ({ ...p, reward: Number(e.target.value) }))} />
-        <input className="input" type="number" placeholder="Required Deposit (special)" value={taskForm.requiredDeposit} onChange={(e) => setTaskForm((p) => ({ ...p, requiredDeposit: Number(e.target.value) }))} />
-        <button className="btn" onClick={createTask}>Create Task</button>
-      </div>
-      <div className="card dashboard-panel">
-        <h3>Task Management</h3>
-        <button className="btn btn-outline-soft" onClick={clearTaskHistory}>Delete All Task History</button>
-        <div className="dashboard-list">
-          {tasks.map((t) => (
-            <div key={t._id} className="dashboard-row">
-              <p className="dashboard-subtle">
-                {t.title} ({t.type}) reward ${t.reward} {t.isActive ? "active" : "inactive"}
-              </p>
-              <p className="dashboard-subtle">Image: {t.imageUrl || "N/A"} | Question: {t.question || "N/A"}</p>
-              <div className="dashboard-action-group">
-                <button className="btn" onClick={() => toggleTask(t._id, t.isActive)}>{t.isActive ? "Disable" : "Enable"}</button>
-                <button className="btn btn-outline-soft" onClick={() => deleteTask(t._id)}>Delete</button>
+                {/* Rest of your user list + pagination */}
+                <div className="dashboard-action-group" style={{ marginBottom: 10 }}>
+                  <p className="dashboard-subtle" style={{ margin: 0 }}>
+                    Showing {users.length === 0 ? 0 : usersStartIndex + 1}-{Math.min(usersStartIndex + usersPerPage, users.length)} of {users.length} users
+                  </p>
+                </div>
+                <div className="dashboard-list">
+                  {paginatedUsers.map((u) => (
+                    <div key={u._id} className="dashboard-row">
+                      <div>
+                        <p className="dashboard-row-title">{u.name}</p>
+                        <p className="dashboard-subtle">{u.phone} | role: {u.role} | joined: {new Date(u.joinedAt).toLocaleDateString()}</p>
+                        <p className="dashboard-subtle">User ID: {u._id}</p>
+                      </div>
+                      <div className="dashboard-action-group">
+                        <button className="btn btn-outline-soft" onClick={() => pickUserForNotification(u._id)}>
+                          Use ID for Notification
+                        </button>
+                        {u.role !== "admin" && (
+                          <button className="btn" onClick={() => assignAdmin(u._id)}>Make Admin</button>
+                        )}
+                        <button className="btn btn-outline-soft" onClick={() => clearUserHistory(u._id, u.name)}>Clear History</button>
+                        <button className="btn btn-outline-soft" onClick={() => deleteUser(u._id, u.name)}>Delete User</button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+                <div className="dashboard-action-group" style={{ marginTop: 10 }}>
+                  <button className="btn btn-outline-soft" disabled={safeUsersPage <= 1} onClick={() => setUsersPage((p) => Math.max(1, p - 1))}>Previous</button>
+                  <p className="dashboard-subtle" style={{ margin: 0 }}>Page {safeUsersPage} / {totalUserPages}</p>
+                  <button className="btn btn-outline-soft" disabled={safeUsersPage >= totalUserPages} onClick={() => setUsersPage((p) => Math.min(totalUserPages, p + 1))}>Next</button>
+                </div>
               </div>
-            </div>
-          ))}
-        </div>
+            )}
+
+            {/* 4. Transactions */}
+            {selectedAction === "transactions" && (
+              <div>
+                <h3>Transactions Review</h3>
+                <button className="btn btn-outline-soft" onClick={clearTransactionHistory}>Delete All Transaction History</button>
+                <div className="dashboard-list">
+                  {txs.map((t) => (
+                    <div key={t._id} className="dashboard-row">
+                      <div>
+                        <p className="dashboard-subtle">{t.type} ${t.amount} by {t.userId} - {t.status}</p>
+                        {t.screenshotUrl && (
+                          <div className="dashboard-proof-preview">
+                            <img src={t.screenshotUrl} alt={`Proof ${t._id}`} className="dashboard-proof-image" />
+                            <a className="btn btn-outline-soft" href={t.screenshotUrl} target="_blank" rel="noreferrer">Open Proof</a>
+                          </div>
+                        )}
+                      </div>
+                      {t.status === "pending" && (
+                        <div className="dashboard-action-group">
+                          <button className="btn" onClick={() => updateTx(t._id, "accepted")}>Accept</button>
+                          <button className="btn btn-outline-soft" onClick={() => updateTx(t._id, "declined")}>Decline</button>
+                        </div>
+                      )}
+                      <button className="btn btn-outline-soft" onClick={() => deleteTransaction(t._id)}>Delete</button>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* 5. Support */}
+            {selectedAction === "support" && (
+              <div>
+                <h3>Support Inbox</h3>
+                <button className="btn btn-outline-soft" onClick={clearSupportHistory}>Delete All Support History</button>
+                <div className="dashboard-list">
+                  {messages.map((m) => (
+                    <div key={m._id} className="dashboard-row">
+                      <p className="dashboard-subtle">{m.name} ({m.email}) - {m.reason}: {m.message}</p>
+                      <button className="btn btn-outline-soft" onClick={() => deleteSupportMessage(m._id)}>Delete</button>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* 6. Create Task */}
+            {selectedAction === "create-task" && (
+              <div>
+                <h3>Create Task</h3>
+                <input className="input" placeholder="Title" value={taskForm.title} onChange={(e) => setTaskForm((p) => ({ ...p, title: e.target.value }))} />
+                <input className="input" placeholder="Task Image URL (required)" value={taskForm.imageUrl} onChange={(e) => setTaskForm((p) => ({ ...p, imageUrl: e.target.value }))} />
+                <input className="input" placeholder="Task Question (required)" value={taskForm.question} onChange={(e) => setTaskForm((p) => ({ ...p, question: e.target.value }))} />
+                <select className="select" value={taskForm.type} onChange={(e) => setTaskForm((p) => ({ ...p, type: e.target.value }))}>
+                  <option value="normal">Normal</option>
+                  <option value="special">Special</option>
+                </select>
+                <input className="input" type="number" placeholder="Reward" value={taskForm.reward} onChange={(e) => setTaskForm((p) => ({ ...p, reward: Number(e.target.value) }))} />
+                <input className="input" type="number" placeholder="Required Deposit (special)" value={taskForm.requiredDeposit} onChange={(e) => setTaskForm((p) => ({ ...p, requiredDeposit: Number(e.target.value) }))} />
+                <button className="btn" onClick={createTask}>Create Task</button>
+              </div>
+            )}
+
+            {/* 7. Task Management */}
+            {selectedAction === "tasks" && (
+              <div>
+                <h3>Task Management</h3>
+                <button className="btn btn-outline-soft" onClick={clearTaskHistory}>Delete All Task History</button>
+                <div className="dashboard-list">
+                  {tasks.map((t) => (
+                    <div key={t._id} className="dashboard-row">
+                      <p className="dashboard-subtle">{t.title} ({t.type}) reward ${t.reward} {t.isActive ? "active" : "inactive"}</p>
+                      <p className="dashboard-subtle">Image: {t.imageUrl || "N/A"} | Question: {t.question || "N/A"}</p>
+                      <div className="dashboard-action-group">
+                        <button className="btn" onClick={() => toggleTask(t._id, t.isActive)}>{t.isActive ? "Disable" : "Enable"}</button>
+                        <button className="btn btn-outline-soft" onClick={() => deleteTask(t._id)}>Delete</button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+          </div>
+        )}
       </div>
     </section>
   );

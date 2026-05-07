@@ -220,6 +220,8 @@ export function DashboardClient({ user, tasks, completedTasks, txs, notification
           <p className="dashboard-stat-chip">Remaining tasks: {Math.max(0, 40 - user.dailyTaskCompleted)}</p>
         </div>
         {user.dailyTaskCompleted >= 40 && <p className="dashboard-subtle">You reached the max amount of tasks in this 24h window.</p>}
+        <p className="dashboard-subtle">Admin Wallet: {process.env.NEXT_PUBLIC_ADMIN_WALLET || "Set NEXT_PUBLIC_ADMIN_WALLET in env"}</p>
+
       </div>
       <div className="card dashboard-panel">
         <h3>Available Tasks</h3>
